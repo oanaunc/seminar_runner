@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Runner — Progressive Difficulty</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0a0f; }
+    canvas { display: block; }
+
+    /* ── UI layer ────────────────────────────── */
+    #ui {
+      position: fixed; inset: 0;
+      pointer-events: none;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      color: #fff;
+      z-index: 10;
+    }
+
+    /* HUD */
+    #hud {
+      display: none;
+      position: absolute; top: 0; left: 0; right: 0;
+      padding: 16px 20px;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    #hud .left, #hud .right { display: flex; flex-direction: column; gap: 4px; }
+    #hud .right { align-items: flex-end; }
+    .hud-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.55; }
+    .hud-value { font-size: 26px; font-weight: 700; letter-spacing: 1px; }
+    .hud-speed { font-size: 13px; opacity: 0.5; }
+
+    /* Start screen */
+    #start-screen {
+      display: flex;
+      flex-direction: column; align-items: center; justify-content: center;
+      position: absolute; inset: 0;
+      background: rgba(6, 6, 14, 0.88);
+      pointer-events: auto;
+    }
+    #start-screen h1 {
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 800;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #00e5ff, #aa00ff);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    #start-screen .subtitle {
+      font-size: 14px; opacity: 0.5; margin-bottom: 36px; text-align: center; max-width: 340px;
+    }
+    .btn {
+      pointer-events: auto;
+      cursor: pointer;
+      padding: 14px 48px;
+      border: none; border-radius: 8px;
+      font-size: 18px; font-weight: 700;
+      letter-spacing: 1px;
+      color: #fff;
+      background: linear-gradient(135deg, #00b0ff, #7c4dff);
+      box-shadow: 0 4px 20px rgba(0, 176, 255, 0.3);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn:hover { transform: scale(1.05); box-shadow: 0 6px 28px rgba(0, 176, 255, 0.45); }
+    .btn:active { transform: scale(0.97); }
+    .controls-hint {
+      margin-top: 24px; font-size: 12px; opacity: 0.35; text-align: center; line-height: 1.6;
+    }
+
+    /* Game over */
+    #game-over {
+      display: none;
+      flex-direction: column; align-items: center; justify-content: center;
+      position: absolute; inset: 0;
+      background: rgba(6, 6, 14, 0.88);
+      pointer-events: auto;
+    }
+    #game-over h2 {
+      font-size: clamp(32px, 6vw, 56px); font-weight: 800;
+      color: #ff1744; margin-bottom: 24px;
+    }
+    .score-line { font-size: 20px; margin-bottom: 6px; }
+    .score-line span { font-weight: 700; color: #00e5ff; }
+    #game-over .btn { margin-top: 28px; }
+
+    /* Pause */
+    #pause-overlay {
+      display: none;
+      align-items: center; justify-content: center;
+      position: absolute; inset: 0;
+      background: rgba(6, 6, 14, 0.65);
+      font-size: 48px; font-weight: 800; letter-spacing: 4px; opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+  <div id="ui">
+    <!-- HUD -->
+    <div id="hud">
+      <div class="left">
+        <span class="hud-label">Score</span>
+        <span class="hud-value" id="hud-score">0</span>
+        <span class="hud-speed" id="hud-speed"></span>
+      </div>
+      <div class="right">
+        <span class="hud-label">Coins</span>
+        <span class="hud-value" id="hud-coins">0</span>
+      </div>
+    </div>
+
+    <!-- Start screen -->
+    <div id="start-screen">
+      <h1>RUNNER</h1>
+      <p class="subtitle">Progressive difficulty — endless survival. How long can you last?</p>
+      <button class="btn" id="btn-play">PLAY</button>
+      <p class="controls-hint">
+        Arrow keys / WASD to move &middot; Space to jump<br>
+        Swipe on mobile &middot; P to pause
+      </p>
+    </div>
+
+    <!-- Game over -->
+    <div id="game-over">
+      <h2>GAME OVER</h2>
+      <p class="score-line">Score: <span id="go-score">0</span></p>
+      <p class="score-line">Best: <span id="go-best">0</span></p>
+      <p class="score-line">Coins: <span id="go-coins">0</span></p>
+      <button class="btn" id="btn-restart">RESTART</button>
+    </div>
+
+    <!-- Pause -->
+    <div id="pause-overlay">PAUSED</div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
