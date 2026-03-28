@@ -12,8 +12,8 @@ export const PLAYER_WIDTH = 0.9;
 export const PLAYER_DEPTH = 0.9;
 export const PLAYER_HEIGHT = 1.8;
 export const PLAYER_SLIDE_HEIGHT = 0.8;
-export const JUMP_VELOCITY = 11;
-export const GRAVITY = 28;
+export const JUMP_VELOCITY = 14;
+export const GRAVITY = 25;
 export const SLIDE_DURATION = 0.55;
 export const SLIDE_COOLDOWN = 0.15;
 export const LANE_SWITCH_DURATION = 0.14;
@@ -30,6 +30,7 @@ export const SPAWN_AHEAD_MIN = 65;
 export const SPAWN_AHEAD_MAX = 200;
 export const DESPAWN_BEHIND = 15;
 export const COIN_Y = 1.1;
+export const TRAIN_ROOF_Y = 2.3;
 
 // ── Difficulty defaults ─────────────────────────────
 export const MIN_SPEED = 13;

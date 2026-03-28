@@ -29,6 +29,7 @@ export class Player {
     this.y = 0;
     this._vy = 0;
     this._isGrounded = true;
+    this.groundLevel = 0;       // 0 = street; set higher when on a train roof
 
     this._sliding = false;
     this._slideTimer = 0;
@@ -75,6 +76,7 @@ export class Player {
     this.y = 0;
     this._vy = 0;
     this._isGrounded = true;
+    this.groundLevel = 0;
     this._sliding = false;
     this._slideTimer = 0;
     this._slideCooldown = 0;
@@ -140,14 +142,21 @@ export class Player {
       this.laneIndex = this._targetLane;
     }
 
-    // Vertical (jump)
+    // Vertical (jump) — land on groundLevel (0 = street, higher = train roof)
     if (!this._isGrounded) {
       this._vy -= GRAVITY * dt;
       this.y += this._vy * dt;
-      if (this.y <= 0) {
-        this.y = 0;
+      if (this.y <= this.groundLevel) {
+        this.y = this.groundLevel;
         this._vy = 0;
         this._isGrounded = true;
+      }
+    } else {
+      // If grounded but ground disappeared (ran off end of train), start falling
+      if (this.y > this.groundLevel + 0.01) {
+        this._isGrounded = false;
+      } else {
+        this.y = this.groundLevel;
       }
     }
     this.group.position.y = this.y;

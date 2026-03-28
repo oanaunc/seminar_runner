@@ -6,7 +6,7 @@ import { Difficulty } from './Difficulty.js';
 import { Input } from './Input.js';
 import { Audio } from './Audio.js';
 import { UI } from './UI.js';
-import { aabbOverlap, randFloat } from './Utils.js';
+import { aabbOverlap, randFloat, TRAIN_ROOF_Y } from './Utils.js';
 
 const SCORE_MULT = 1.8;
 const BEST_KEY = 'runner_best_score';
@@ -184,10 +184,44 @@ export class Game {
     this.spawner.update(dt, this.difficulty, this.track.worldOffset);
     this.player.update(dt, speed);
 
-    // Collision: obstacles
+    // ── Train-roof platform logic ──
+    // Check if the player is standing on (or can land on) a train roof.
+    // Set groundLevel to the roof height while horizontally overlapping a train;
+    // reset to 0 otherwise so the player falls back to street level.
+    let onTrain = false;
     const pBox = this.player.getAABB();
+
     for (const obs of this.spawner.obstacles) {
-      const oBox = this.spawner.getObstacleAABB(obs);
+      if (!obs.isTrain) continue;
+
+      const sameX = Math.abs(pBox.x - obs.mesh.position.x) < obs.hw + pBox.hw;
+      const overlapZ = Math.abs(pBox.z - obs.z) < obs.hd + pBox.hd;
+      if (!sameX || !overlapZ) continue;
+
+      const playerBottom = this.player.y;
+      const roofY = TRAIN_ROOF_Y;
+
+      // Player is above (or falling onto) the roof
+      if (playerBottom >= roofY - 0.3 && this.player.y >= roofY - 0.5) {
+        onTrain = true;
+        this.player.groundLevel = roofY;
+        break;
+      }
+    }
+    if (!onTrain) {
+      this.player.groundLevel = 0;
+    }
+
+    // ── Collision: obstacles ──
+    for (const obs of this.spawner.obstacles) {
+      let oBox;
+      if (obs.isTrain) {
+        // Only collide with the train body (sides), not the roof surface
+        if (this.player.y >= TRAIN_ROOF_Y - 0.15) continue;
+        oBox = this.spawner.getTrainSideAABB(obs);
+      } else {
+        oBox = this.spawner.getObstacleAABB(obs);
+      }
       if (aabbOverlap(pBox, oBox)) {
         this._gameOver();
         return;
