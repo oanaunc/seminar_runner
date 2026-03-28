@@ -37,8 +37,8 @@ export class Player {
     // Visual mesh: simple capsule-like figure built from primitives
     this.group = new THREE.Group();
 
-    const bodyMat = new THREE.MeshStandardMaterial({ color: 0x00e5ff, roughness: 0.45, metalness: 0.2 });
-    const headMat = new THREE.MeshStandardMaterial({ color: 0xffe0b2, roughness: 0.5 });
+    const bodyMat = new THREE.MeshStandardMaterial({ color: 0x2288dd, roughness: 0.5, metalness: 0.1 });
+    const headMat = new THREE.MeshStandardMaterial({ color: 0xffcca0, roughness: 0.6 });
 
     const body = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.1, 0.5), bodyMat);
     body.position.y = 0.55;

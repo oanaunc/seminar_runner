@@ -6,7 +6,7 @@ import { Difficulty } from './Difficulty.js';
 import { Input } from './Input.js';
 import { Audio } from './Audio.js';
 import { UI } from './UI.js';
-import { aabbOverlap } from './Utils.js';
+import { aabbOverlap, randFloat } from './Utils.js';
 
 const SCORE_MULT = 1.8;
 const BEST_KEY = 'runner_best_score';
@@ -15,6 +15,8 @@ const STATE_MENU = 0;
 const STATE_PLAYING = 1;
 const STATE_OVER = 2;
 const STATE_PAUSED = 3;
+
+const SKY_COLOR = 0x78c4f0;
 
 /**
  * Main game orchestrator — owns the Three.js scene and drives
@@ -27,35 +29,50 @@ export class Game {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.BasicShadowMap;
-    this.renderer.setClearColor(0x0a0a14);
+    this.renderer.setClearColor(SKY_COLOR);
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.1;
 
     // Scene
     this.scene = new THREE.Scene();
-    this.scene.fog = new THREE.Fog(0x0a0a14, 30, 120);
+    this.scene.background = new THREE.Color(SKY_COLOR);
+    this.scene.fog = new THREE.Fog(SKY_COLOR, 50, 160);
 
     // Camera — third-person behind + above player
-    this.camera = new THREE.PerspectiveCamera(65, 1, 0.5, 200);
+    this.camera = new THREE.PerspectiveCamera(65, 1, 0.5, 250);
     this.camera.position.set(0, 4.5, 7);
     this.camera.lookAt(0, 1.2, -15);
 
-    // Lighting
-    const ambient = new THREE.AmbientLight(0x8888cc, 0.6);
+    // ── Daylight lighting ───────────────────────────
+    // Bright warm sunlight from upper-right
+    const sun = new THREE.DirectionalLight(0xfff4e0, 1.6);
+    sun.position.set(8, 20, -5);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(1024, 1024);
+    sun.shadow.camera.near = 1;
+    sun.shadow.camera.far = 80;
+    sun.shadow.camera.left = -20;
+    sun.shadow.camera.right = 20;
+    sun.shadow.camera.top = 20;
+    sun.shadow.camera.bottom = -20;
+    this.scene.add(sun);
+
+    // Hemisphere: sky-blue from above, warm ground bounce from below
+    const hemi = new THREE.HemisphereLight(0x88ccff, 0xc4a882, 0.7);
+    this.scene.add(hemi);
+
+    // Soft ambient fill
+    const ambient = new THREE.AmbientLight(0xddeeff, 0.45);
     this.scene.add(ambient);
 
-    const dir = new THREE.DirectionalLight(0xffffff, 0.9);
-    dir.position.set(5, 12, 8);
-    dir.castShadow = true;
-    dir.shadow.mapSize.set(1024, 1024);
-    dir.shadow.camera.near = 1;
-    dir.shadow.camera.far = 60;
-    dir.shadow.camera.left = -15;
-    dir.shadow.camera.right = 15;
-    dir.shadow.camera.top = 15;
-    dir.shadow.camera.bottom = -15;
-    this.scene.add(dir);
-
-    const hemi = new THREE.HemisphereLight(0x4444aa, 0x111122, 0.35);
-    this.scene.add(hemi);
+    // ── Clouds ──────────────────────────────────────
+    this._clouds = [];
+    this._cloudMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff, roughness: 1.0, metalness: 0.0,
+      transparent: true, opacity: 0.85,
+    });
+    this._cloudPuffGeo = new THREE.SphereGeometry(1, 8, 6);
+    this._initClouds();
 
     // Subsystems
     this.input = new Input();
@@ -120,8 +137,10 @@ export class Game {
     // Process input
     const acts = this.input.consume();
 
+    // Clouds always animate regardless of state
+    this._updateClouds(dt, this.state === STATE_PLAYING ? this.difficulty.speed : 5);
+
     if (this.state === STATE_MENU) {
-      // idle scene drift
       this.track.update(dt, 5);
       this.renderer.render(this.scene, this.camera);
       return;
@@ -197,6 +216,55 @@ export class Game {
     this.camera.position.x += (this.player.group.position.x * 0.35 - this.camera.position.x) * 0.08;
 
     this.renderer.render(this.scene, this.camera);
+  }
+
+  // ── Clouds ───────────────────────────────────────
+  _initClouds() {
+    for (let i = 0; i < 18; i++) {
+      this._spawnCloud(true);
+    }
+  }
+
+  _spawnCloud(scatter = false) {
+    const group = new THREE.Group();
+
+    // Each cloud is 4-7 overlapping spheres of varying size
+    const puffCount = 4 + Math.floor(Math.random() * 4);
+    for (let p = 0; p < puffCount; p++) {
+      const s = randFloat(1.2, 3.5);
+      const puff = new THREE.Mesh(this._cloudPuffGeo, this._cloudMat);
+      puff.scale.set(s, s * randFloat(0.5, 0.75), s * randFloat(0.7, 1.0));
+      puff.position.set(
+        randFloat(-2.5, 2.5),
+        randFloat(-0.4, 0.6),
+        randFloat(-1.5, 1.5),
+      );
+      group.add(puff);
+    }
+
+    const x = randFloat(-40, 40);
+    const y = randFloat(18, 35);
+    const z = scatter ? randFloat(-180, 20) : randFloat(-200, -160);
+    group.position.set(x, y, z);
+
+    const drift = randFloat(0.4, 1.8);
+    this.scene.add(group);
+    this._clouds.push({ group, drift });
+  }
+
+  _updateClouds(dt, speed) {
+    for (let i = this._clouds.length - 1; i >= 0; i--) {
+      const c = this._clouds[i];
+      // Clouds drift with the world scroll + a slow lateral drift
+      c.group.position.z += speed * dt;
+      c.group.position.x += c.drift * dt;
+
+      if (c.group.position.z > 60) {
+        this.scene.remove(c.group);
+        this._clouds.splice(i, 1);
+        this._spawnCloud(false);
+      }
+    }
   }
 
   _onResize() {

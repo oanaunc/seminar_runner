@@ -27,59 +27,62 @@ export class Track {
     this._worldOffset = 0;
 
     // ── Shared materials ────────────────────────────
+    // ── Daylight street materials ────────────────────
     this._asphaltMat = new THREE.MeshStandardMaterial({
-      color: 0x1e1e2a, roughness: 0.92, metalness: 0.05,
+      color: 0x444450, roughness: 0.95, metalness: 0.02,
     });
     this._sidewalkMat = new THREE.MeshStandardMaterial({
-      color: 0x2a2a3a, roughness: 0.85, metalness: 0.05,
+      color: 0xb0a898, roughness: 0.88, metalness: 0.02,
     });
     this._curbMat = new THREE.MeshStandardMaterial({
-      color: 0x3a3a4a, roughness: 0.75,
+      color: 0x999088, roughness: 0.8,
     });
     this._lineMat = new THREE.MeshStandardMaterial({
-      color: 0x00e5ff, emissive: 0x003344, roughness: 0.3, metalness: 0.5,
+      color: 0xeecc22, roughness: 0.4, metalness: 0.1,
     });
     this._whiteLineMat = new THREE.MeshStandardMaterial({
-      color: 0x888899, emissive: 0x111115, roughness: 0.5,
+      color: 0xeeeeee, roughness: 0.5,
     });
     this._railMat = new THREE.MeshStandardMaterial({
-      color: 0x5a5a6a, roughness: 0.55, metalness: 0.5,
+      color: 0x7a7a80, roughness: 0.45, metalness: 0.6,
     });
     this._crosswalkMat = new THREE.MeshStandardMaterial({
-      color: 0x444455, roughness: 0.7,
+      color: 0xe8e8e0, roughness: 0.6,
     });
     this._manholeMat = new THREE.MeshStandardMaterial({
-      color: 0x333340, roughness: 0.6, metalness: 0.3,
+      color: 0x555560, roughness: 0.55, metalness: 0.4,
     });
 
-    // Building palette — several tones so the skyline isn't monotone
+    // Building palette — warm daylight tones
     this._buildingMats = [
-      new THREE.MeshStandardMaterial({ color: 0x14142a, roughness: 0.8 }),
-      new THREE.MeshStandardMaterial({ color: 0x1a1a35, roughness: 0.75 }),
-      new THREE.MeshStandardMaterial({ color: 0x0f0f22, roughness: 0.85 }),
-      new THREE.MeshStandardMaterial({ color: 0x18182e, roughness: 0.7 }),
-      new THREE.MeshStandardMaterial({ color: 0x111128, roughness: 0.8 }),
+      new THREE.MeshStandardMaterial({ color: 0xc8bca8, roughness: 0.75 }),
+      new THREE.MeshStandardMaterial({ color: 0xb8a898, roughness: 0.8 }),
+      new THREE.MeshStandardMaterial({ color: 0xd4c8b4, roughness: 0.7 }),
+      new THREE.MeshStandardMaterial({ color: 0xa09488, roughness: 0.85 }),
+      new THREE.MeshStandardMaterial({ color: 0x8899aa, roughness: 0.75 }),
+      new THREE.MeshStandardMaterial({ color: 0xc4b0a0, roughness: 0.78 }),
+      new THREE.MeshStandardMaterial({ color: 0xe0d0c0, roughness: 0.72 }),
     ];
     this._windowMat = new THREE.MeshStandardMaterial({
-      color: 0xffdd66, emissive: 0x665500, roughness: 0.2, metalness: 0.1,
+      color: 0x88ccee, roughness: 0.15, metalness: 0.3,
     });
     this._windowDarkMat = new THREE.MeshStandardMaterial({
-      color: 0x1a1a2e, emissive: 0x050510, roughness: 0.5,
+      color: 0x334455, roughness: 0.4, metalness: 0.2,
     });
     this._roofMat = new THREE.MeshStandardMaterial({
-      color: 0x222235, roughness: 0.7, metalness: 0.15,
+      color: 0x887766, roughness: 0.7, metalness: 0.1,
     });
     this._lampPoleMat = new THREE.MeshStandardMaterial({
-      color: 0x444455, roughness: 0.5, metalness: 0.6,
+      color: 0x555555, roughness: 0.5, metalness: 0.7,
     });
     this._lampGlowMat = new THREE.MeshStandardMaterial({
-      color: 0xffeebb, emissive: 0xaa8833, roughness: 0.2,
+      color: 0xfff8e0, roughness: 0.3,
     });
     this._bollardMat = new THREE.MeshStandardMaterial({
-      color: 0xff6600, emissive: 0x441100, roughness: 0.4, metalness: 0.2,
+      color: 0xff7722, roughness: 0.45, metalness: 0.15,
     });
     this._wireMat = new THREE.MeshStandardMaterial({
-      color: 0x333344, roughness: 0.5, metalness: 0.6,
+      color: 0x444444, roughness: 0.5, metalness: 0.7,
     });
 
     // Reusable geometries
